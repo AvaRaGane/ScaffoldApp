@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.BottomAppBar
@@ -26,6 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.scaffoldapp.ui.theme.ScaffoldAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -45,28 +51,29 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScaffoldApp() {
-    Scaffold(
-        topBar = { MyTopBar() },
-        content = { paddingValues ->
-            Column(modifier = Modifier.padding(paddingValues)) {
-                Text(text = "Content for Home screen")
-            }
-        },
-        //bottomBar = {BottomAppBar {Text(text = "Bottom bar")}}
-    )
+    val navController = rememberNavController()
+    NavHost(
+        navController = navController,
+        startDestination = "Home"
+    ) {
+        composable(route = "Home") {
+            MainScreen(navController)
+        }
+        composable(route = "Info") {
+            InfoScreen(navController)
+        }
+        composable(route = "Settings") {
+            SettingsScreen(navController)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyTopBar() {
+fun MyTopBar(title: String, navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
     TopAppBar(
-        title = { Text("My app") },
-        navigationIcon = {
-            IconButton(
-                onClick = { /*TODO*/ }
-            ) { Icon(Icons.Filled.Menu, contentDescription = null) }
-        },
+        title = { Text(title) },
         actions = {
             IconButton(onClick = {
                 expanded = !expanded
@@ -79,18 +86,65 @@ fun MyTopBar() {
             ) {
                 DropdownMenuItem(
                     text = { Text("Info") },
-                    onClick = { /*TODO*/ }
+                    onClick = { navController.navigate("info") }
                 )
                 DropdownMenuItem(
                     text = { Text("Settings") },
-                    onClick = { /*TODO*/ }
+                    onClick = { navController.navigate("settings") }
                 )
             }
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScreenTopBar(title: String, navController: NavController) {
+    TopAppBar(
+        title = { Text(title) },
+        navigationIcon = {
+            IconButton(onClick = {navController.navigateUp()}) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            }
+        }
+    )
+}
 
+@Composable
+fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
+    Scaffold(
+        topBar = { MyTopBar("My App", navController) },
+        content = { innerPadding ->
+            Column(modifier = modifier.padding(innerPadding)) {
+                Text(text = "Content for Home screen")
+            }
+        },
+    )
+}
+
+@Composable
+fun InfoScreen(navController: NavController, modifier: Modifier = Modifier) {
+    Scaffold(
+        topBar = { ScreenTopBar("Info", navController) },
+        content = { innerPadding ->
+            Column(modifier =modifier.padding(innerPadding)) {
+                Text(text = "Content for Info screen")
+            }
+        },
+    )
+}
+
+@Composable
+fun SettingsScreen(navController: NavController, modifier: Modifier = Modifier) {
+    Scaffold(
+        topBar = { ScreenTopBar("Settings", navController) },
+        content = { innerPadding ->
+            Column(modifier = modifier.padding(innerPadding)) {
+                Text(text = "Content for Settings screen")
+            }
+        },
+    )
+}
 
 @Preview(showBackground = true)
 @Composable
